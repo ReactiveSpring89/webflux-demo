@@ -28,4 +28,19 @@ public class ReactiveMathValidationController {
         }
         return reactiveMathService.findSquare(number);
     }
+
+    @GetMapping("/square/{number}/monoError")
+    public Mono<Response> monoError(@PathVariable int number) {
+        return Mono.just(number)
+                .handle((input, sink) -> {
+                    if (input >= 10 && input <= 20) {
+                        sink.next(input);
+                    } else {
+                        sink.error(new InputValidationException(input));
+                    }
+                })
+                .cast(Integer.class)
+                .flatMap(input -> reactiveMathService.findSquare(input));
+
+    }
 }
